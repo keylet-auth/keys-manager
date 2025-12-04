@@ -232,3 +232,21 @@ func (km *KeyManager) ReloadCache() error {
 
 	return nil
 }
+
+func (km *KeyManager) InitKeys(algs []Alg) error {
+	for _, alg := range algs {
+		km.mu.RLock()
+		_, exists := km.active[alg]
+		km.mu.RUnlock()
+
+		if exists {
+			continue
+		}
+
+		if err := km.Rotate(alg); err != nil {
+			return fmt.Errorf("failed to initialize key for alg %s: %w", alg, err)
+		}
+	}
+
+	return nil
+}

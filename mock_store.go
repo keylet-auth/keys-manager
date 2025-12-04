@@ -3,8 +3,10 @@ package keys_manager
 import "sync"
 
 type MockStore struct {
-	mu   sync.Mutex
-	data map[string]*Key
+	mu          sync.Mutex
+	data        map[string]*Key
+	RotateCount int
+	RotateErr   error
 }
 
 func NewMockStore() *MockStore {
@@ -30,8 +32,14 @@ func (s *MockStore) List() ([]*Key, error) {
 }
 
 func (s *MockStore) Rotate(newKey *Key, old *Key) error {
+	if s.RotateErr != nil {
+		return s.RotateErr
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	s.RotateCount++
 
 	if old != nil {
 		if stored, ok := s.data[old.KID]; ok {
