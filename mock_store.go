@@ -29,12 +29,6 @@ func (s *MockStore) List() ([]*Key, error) {
 	return out, nil
 }
 
-func (s *MockStore) GetByKID(kid string) (*Key, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return s.data[kid], nil
-}
-
 func (s *MockStore) Rotate(newKey *Key, old *Key) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()

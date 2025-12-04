@@ -45,8 +45,6 @@ type Encryptor interface {
 }
 
 type Store interface {
-	Save(key *Key) error
 	List() ([]*Key, error)
-	GetByKID(kid string) (*Key, error)
 	Rotate(newKey *Key, oldKey *Key) error
 }
