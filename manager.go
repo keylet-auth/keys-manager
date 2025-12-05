@@ -71,10 +71,18 @@ func (km *KeyManager) keyByKID(kid string) *CachedKey {
 	return km.cache[kid]
 }
 
-func (km *KeyManager) Sign(alg Alg, signingInput []byte) ([]byte, string, error) {
+func (km *KeyManager) Sign(
+	alg Alg,
+	build func(kid string) ([]byte, error),
+) ([]byte, string, error) {
 	ck := km.activeKey(alg)
 	if ck == nil {
 		return nil, "", fmt.Errorf("no active key for alg %s", alg)
+	}
+
+	signingInput, err := build(ck.key.KID)
+	if err != nil {
+		return nil, "", err
 	}
 
 	opts, err := signingOptions(alg)
