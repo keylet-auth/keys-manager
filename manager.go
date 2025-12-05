@@ -74,20 +74,20 @@ func (km *KeyManager) keyByKID(kid string) *CachedKey {
 func (km *KeyManager) Sign(
 	alg Alg,
 	build func(kid string) ([]byte, error),
-) ([]byte, string, error) {
+) ([]byte, error) {
 	ck := km.activeKey(alg)
 	if ck == nil {
-		return nil, "", fmt.Errorf("no active key for alg %s", alg)
+		return nil, fmt.Errorf("no active key for alg %s", alg)
 	}
 
 	signingInput, err := build(ck.key.KID)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
 	opts, err := signingOptions(alg)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
 	var digest []byte
@@ -101,10 +101,19 @@ func (km *KeyManager) Sign(
 
 	sig, err := ck.priv.Sign(rand.Reader, digest, opts)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
-	return sig, ck.key.KID, nil
+	if alg != AlgES256 {
+		return sig, nil
+	}
+
+	rawSig, err := DERToRawECDSA(alg, sig)
+	if err != nil {
+		return nil, fmt.Errorf("ecdsa convert: %w", err)
+	}
+
+	return rawSig, nil
 }
 
 func (km *KeyManager) Verify(kid string, payload, sig []byte) error {
