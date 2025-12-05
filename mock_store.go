@@ -16,6 +16,15 @@ func NewMockStore() *MockStore {
 func (s *MockStore) Save(key *Key) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	if key.IsActive {
+		for _, k := range s.data {
+			if k.Alg == key.Alg {
+				k.IsActive = false
+			}
+		}
+	}
+
 	s.data[key.KID] = key
 	return nil
 }

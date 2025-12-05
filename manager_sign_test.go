@@ -25,7 +25,7 @@ func TestSignAndVerify(t *testing.T) {
 
 	data := []byte("hello world")
 
-	sig, err := km.Sign(AlgRS256, data)
+	sig, kid, err := km.Sign(AlgRS256, data)
 	if err != nil {
 		t.Fatalf("sign error: %v", err)
 	}
@@ -34,7 +34,7 @@ func TestSignAndVerify(t *testing.T) {
 		t.Fatalf("empty signature")
 	}
 
-	if err := km.Verify("k1", AlgRS256, data, sig); err != nil {
+	if err := km.Verify(kid, data, sig); err != nil {
 		t.Fatalf("verify failed: %v", err)
 	}
 }

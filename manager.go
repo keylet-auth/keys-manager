@@ -71,15 +71,15 @@ func (km *KeyManager) keyByKID(kid string) *CachedKey {
 	return km.cache[kid]
 }
 
-func (km *KeyManager) Sign(alg Alg, signingInput []byte) ([]byte, error) {
+func (km *KeyManager) Sign(alg Alg, signingInput []byte) ([]byte, string, error) {
 	ck := km.activeKey(alg)
 	if ck == nil {
-		return nil, fmt.Errorf("no active key for alg %s", alg)
+		return nil, "", fmt.Errorf("no active key for alg %s", alg)
 	}
 
 	opts, err := signingOptions(alg)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	var digest []byte
@@ -91,16 +91,21 @@ func (km *KeyManager) Sign(alg Alg, signingInput []byte) ([]byte, error) {
 		digest = signingInput
 	}
 
-	return ck.priv.Sign(rand.Reader, digest, opts)
+	sig, err := ck.priv.Sign(rand.Reader, digest, opts)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return sig, ck.key.KID, nil
 }
 
-func (km *KeyManager) Verify(kid string, alg Alg, payload, sig []byte) error {
+func (km *KeyManager) Verify(kid string, payload, sig []byte) error {
 	ck := km.keyByKID(kid)
 	if ck == nil {
 		return fmt.Errorf("key %s not found", kid)
 	}
 
-	return verifySignature(alg, ck.pub, payload, sig)
+	return verifySignature(ck.key.Alg, ck.pub, payload, sig)
 }
 
 func (km *KeyManager) JWKS() ([]byte, error) {
