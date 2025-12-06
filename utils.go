@@ -168,7 +168,7 @@ func buildJWKS(cache map[string]*CachedKey) *JWKS {
 		switch pub := ck.pub.(type) {
 
 		// -------------------------
-		// 🔹 RSA
+		// RSA
 		// -------------------------
 		case *rsa.PublicKey:
 			k.Kty = "RSA"
@@ -176,16 +176,16 @@ func buildJWKS(cache map[string]*CachedKey) *JWKS {
 			k.E = b64big(big.NewInt(int64(pub.E)))
 
 		// -------------------------
-		// 🔹 ECDSA (ES256)
+		// EC (ES256)
 		// -------------------------
 		case *ecdsa.PublicKey:
 			k.Kty = "EC"
+			k.Crv = "P-256"
 			k.X = b64big(pub.X)
 			k.Y = b64big(pub.Y)
-			k.Crv = "P-256"
 
 		// -------------------------
-		// 🔹 Ed25519 (OKP)
+		// OKP (Ed25519)
 		// -------------------------
 		case ed25519.PublicKey:
 			k.Kty = "OKP"
